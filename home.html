@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الرئيسية - البيئة الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f7fa; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ================= الشريط العلوي الكحلي ================= */
+        .top-header {
+            background-color: #1a2b4c;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1002;
+        }
+        
+        /* الجزء اليمين (القائمة واسم المنصة) */
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .menu-btn { font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .menu-btn:hover { color: #f39c12; }
+        .brand-title { font-weight: 900; font-size: 20px; letter-spacing: 0.5px; }
+        .brand-title span { background: #5b8ee5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 5px; }
+        
+        /* زرار تسجيل الخروج الواضح */
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn:hover { background-color: #c0392b; transform: translateY(-1px); }
+
+        /* ================= شريط القوائم الثابت (الأبيض) ================= */
+        .main-nav {
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center; /* توسيط القوائم */
+        }
+        
+        .nav-list {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap; /* عشان الشاشات الصغيرة */
+        }
+        
+        .nav-list > li { position: relative; }
+        
+        .nav-list > li > a {
+            display: block;
+            padding: 16px 20px;
+            color: #34495e;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: 0.3s;
+        }
+        
+        .nav-list > li > a:hover, .nav-list > li > a.active {
+            color: #1a2b4c;
+            border-bottom-color: #5b8ee5;
+            background-color: #f8faff;
+        }
+
+        /* القوائم المنسدلة (Drop-down) من الشريط الأبيض */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            min-width: 220px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 0 0 8px 8px;
+            border-top: 3px solid #5b8ee5;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+        }
+        .has-dropdown:hover .dropdown { display: flex; } /* تظهر لما تقف عليها بالماوس */
+        
+        .dropdown a {
+            padding: 12px 20px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 1px solid #f1f1f1;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .dropdown a:hover { background-color: #f8faff; color: #5b8ee5; padding-right: 25px; }
+
+        /* ================= القائمة الجانبية (إعدادات الطالب فقط) ================= */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px; /* مخفية */
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1003;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.active { right: 0; }
+        
+        .sidebar-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8faff;
+            margin-bottom: 10px;
+        }
+        .user-info h3 { color: #1a2b4c; font-size: 18px; font-weight: 800; }
+        .user-info p { color: #7f8c8d; font-size: 13px; font-weight: 600; margin-top: 3px; }
+        .close-sidebar { font-size: 22px; color: #95a5a6; cursor: pointer; transition: 0.2s; }
+        .close-sidebar:hover { color: #e74c3c; transform: rotate(90deg); }
+        
+        .sidebar ul { list-style: none; flex: 1; }
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 25px;
+            color: #34495e;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            border-left: 4px solid transparent;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .sidebar ul li a:hover { background-color: #f4f7fa; color: #5b8ee5; border-left-color: #5b8ee5; }
+
+        /* التعتيم خلف القائمة الجانبية */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002; display: none; backdrop-filter: blur(2px); }
+        .overlay.active { display: block; }
+
+        /* ================= منطقة المحتوى ================= */
+        .main-content {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* واجهة الترحيب (نفس الشياكة) */
+        .welcome-view { text-align: center; padding: 20px; animation: fadeIn 0.5s; }
+        .icon-circle { width: 90px; height: 90px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 45px; box-shadow: 0 10px 25px rgba(91, 142, 229, 0.2); margin: 0 auto 25px; color: #1a2b4c; }
+        .welcome-view h1 { font-size: 36px; font-weight: 900; line-height: 1.3; margin-bottom: 15px; }
+        .welcome-view h1 .dark { color: #1a2b4c; display: block; }
+        .welcome-view h1 .light { color: #5b8ee5; display: block; }
+        .welcome-view p { color: #7f8c8d; font-size: 16px; max-width: 550px; margin: 0 auto; line-height: 1.7; font-weight: 600; }
+
+        /* شبكة الموديولات الستة (بتصميم موحد ورسمي) */
+        .modules-grid { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; animation: fadeIn 0.5s; }
+        
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+            border: 1px solid #eef2f5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* خط أزرق بيظهر من تحت لما تقف بالماوس */
+        .module-card::after {
+            content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: #5b8ee5; transform: scaleX(0); transition: transform 0.3s ease; transform-origin: left;
+        }
+        
+        .module-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(91, 142, 229, 0.1); border-color: #d1e0fc; }
+        .module-card:hover::after { transform: scaleX(1); }
+        
+        /* الأيقونة الموحدة للموديولات */
+        .unified-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #f0f4f8;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #5b8ee5;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .module-card:hover .unified-icon { background-color: #5b8ee5; color: white; }
+        
+        .module-info { text-align: right; }
+        .module-info h3 { color: #1a2b4c; font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+        .module-info p { color: #7f8c8d; font-size: 13px; font-weight: 600; }
+
+        /* أنيميشن بسيط */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* الفوتر */
+        .footer { text-align: center; padding: 25px; color: #95a5a6; font-size: 13px; font-weight: 600; background-color: white; border-top: 1px solid #eee; margin-top: auto; }
+
+    </style>
+</head>
+<body>
+
+    <script>
+        let currentUser = localStorage.getItem("currentUser");
+        if (!currentUser) window.location.href = "index.html";
+        else if (localStorage.getItem(currentUser + "_preTestDone") !== "true") window.location.href = "pre-test.html";
+        else if (localStorage.getItem(currentUser + "_surveyDone") !== "true") window.location.href = "survey.html";
+    </script>
+
+    <div class="top-header">
+        <div class="header-right">
+            <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+            <div class="brand-title">البيئة الذكية <span>Beta</span></div>
+        </div>
+        
+        <button class="logout-btn" onclick="logout()">
+            تسجيل خروج ➔
+        </button>
+    </div>
+
+    <nav class="main-nav">
+        <ul class="nav-list">
+            <li><a onclick="showView('welcome')" class="active" id="nav-home">الرئيسية</a></li>
+            <li><a onclick="alert('دليل الطالب قيد الإنشاء')">دليل الطالب</a></li>
+            <li><a onclick="alert('الأهداف العامة قيد الإنشاء')">الأهداف العامة</a></li>
+            
+            <li class="has-dropdown">
+                <a>أدوات القياس القبلي ▼</a>
+                <div class="dropdown">
+                    <a onclick="showResult('test')">الاختبار التحصيلي</a>
+                    <a onclick="showResult('survey')">مقياس التقبل التكنولوجي</a>
+                </div>
+            </li>
+            
+            <li><a onclick="showView('modules')" id="nav-modules">المحتوى التعليمي</a></li>
+            
+            <li class="has-dropdown">
+                <a>أدوات القياس البعدي ▼</a>
+                <div class="dropdown">
+                    <a onclick="alert('مغلق حتى إتمام الموديولات')">الاختبار التحصيلي</a>
+                    <a onclick="alert('مغلق حتى إتمام الموديولات')">مقياس التقبل التكنولوجي</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <h3>مرحباً، <span id="studentName"></span></h3>
+                <p>طالب بكلية التربية</p>
+            </div>
+            <div class="close-sidebar" onclick="toggleSidebar()">✖</div>
+        </div>
+        
+        <ul>
+            <li><a href="#">👤 لوحة الطالب</a></li>
+            <li><a href="#">ℹ️ عن البيئة</a></li>
+            <li><a href="#">🔗 روابط تهمك</a></li>
+            <li><a href="#">💬 الدعم والمساعدة</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="welcomeView" class="welcome-view">
+            <div class="icon-circle">🎓</div>
+            <h1>
+                <span class="dark">البيئة الذكية</span>
+                <span class="light">للتحول الرقمي</span>
+            </h1>
+            <p>لقد اجتزت أدوات القياس القبلي بنجاح. يرجى اختيار "المحتوى التعليمي" من شريط القوائم العلوي للبدء في دراسة الموديولات المقررة.</p>
+        </div>
+
+        <div id="modulesView" class="modules-grid">
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول الأول...')">
+                <div class="unified-icon">📁</div> <div class="module-info">
+                    <h3>الموديول الأول</h3>
+                    <p>مقدمة في التحول الرقمي</p>
+                </div>
+            </div>
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول الثاني...')">
+                <div class="unified-icon">📁</div>
+                <div class="module-info">
+                    <h3>الموديول الثاني</h3>
+                    <p>أدوات الحوسبة السحابية</p>
+                </div>
+            </div>
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول الثالث...')">
+                <div class="unified-icon">📁</div>
+                <div class="module-info">
+                    <h3>الموديول الثالث</h3>
+                    <p>تصميم المحتوى الإلكتروني</p>
+                </div>
+            </div>
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول الرابع...')">
+                <div class="unified-icon">📁</div>
+                <div class="module-info">
+                    <h3>الموديول الرابع</h3>
+                    <p>التقييم والاختبارات الرقمية</p>
+                </div>
+            </div>
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول الخامس...')">
+                <div class="unified-icon">📁</div>
+                <div class="module-info">
+                    <h3>الموديول الخامس</h3>
+                    <p>إدارة الفصول الافتراضية</p>
+                </div>
+            </div>
+            
+            <div class="module-card" onclick="alert('جاري فتح الموديول السادس...')">
+                <div class="unified-icon">📁</div>
+                <div class="module-info">
+                    <h3>الموديول السادس</h3>
+                    <p>تطبيقات الذكاء الاصطناعي</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">جميع الحقوق محفوظة للباحث © 2026</div>
+
+    <script>
+        document.getElementById("studentName").innerText = currentUser;
+
+        // فتح وقفل القائمة الجانبية
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+            document.getElementById("overlay").classList.toggle("active");
+        }
+
+        // التنقل بين الرئيسية والموديولات مع تظليل الزرار النشط
+        function showView(view) {
+            document.getElementById("welcomeView").style.display = "none";
+            document.getElementById("modulesView").style.display = "none";
+            
+            // تصفير اللون النشط
+            document.getElementById("nav-home").classList.remove("active");
+            document.getElementById("nav-modules").classList.remove("active");
+
+            if (view === 'welcome') {
+                document.getElementById("welcomeView").style.display = "block";
+                document.getElementById("nav-home").classList.add("active");
+            } else if (view === 'modules') {
+                document.getElementById("modulesView").style.display = "grid";
+                document.getElementById("nav-modules").classList.add("active");
+            }
+        }
+
+        // عرض نتائج الاختبار القبلي
+        function showResult(type) {
+            let content = "";
+            if(type === 'test') {
+                let score = localStorage.getItem(currentUser + "_preTestScore");
+                content = `
+                    <div class="icon-circle" style="color: #2ecc71;">📝</div>
+                    <h1 class="dark">نتيجة الاختبار القبلي</h1>
+                    <p style="font-size:24px; font-weight:900; color:#5b8ee5; margin-top:15px;">النسبة المئوية: ${score}%</p>
+                `;
+            } else {
+                content = `
+                    <div class="icon-circle" style="color: #f39c12;">📊</div>
+                    <h1 class="dark">مقياس التقبل التكنولوجي</h1>
+                    <p style="font-size:18px; margin-top:20px; color:#27ae60; font-weight:700;">تم حفظ استجاباتك بنجاح. شكراً لتعاونك.</p>
+                `;
+            }
+            document.getElementById("welcomeView").innerHTML = content;
+            
+            // نخفي الموديولات لو كانت ظاهرة
+            document.getElementById("modulesView").style.display = "none";
+            document.getElementById("welcomeView").style.display = "block";
+            
+            document.getElementById("nav-home").classList.remove("active");
+            document.getElementById("nav-modules").classList.remove("active");
+        }
+
+        // تسجيل الخروج
+        function logout() {
+            if(confirm("هل تريد بالتأكيد تسجيل الخروج؟")) {
+                localStorage.removeItem("currentUser");
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>
+
